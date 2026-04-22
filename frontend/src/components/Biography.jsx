@@ -1,6 +1,7 @@
-import React from "react";
 
-const Biography = ({imageUrl}) => {
+import PropTypes from "prop-types";
+
+const Biography = ({ imageUrl }) => {
   return (
     <>
       <div className="container biography">
@@ -35,6 +36,10 @@ const Biography = ({imageUrl}) => {
       </div>
     </>
   );
+};
+
+Biography.propTypes = {
+  imageUrl: PropTypes.string.isRequired,
 };
 
 export default Biography;
