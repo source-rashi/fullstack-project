@@ -1,8 +1,12 @@
-import React, { useContext, useState } from "react";
+import {  useContext, useState  } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Context } from "../context";
 import { api } from "../api/client";
+
+const sanitizeDigits = (value, maxLength) => {
+  return value.replace(/\D/g, "").slice(0, maxLength);
+};
 
 const AddNewDoctor = () => {
   const { isAuthenticated, setIsAuthenticated } = useContext(Context);
@@ -51,6 +55,22 @@ const AddNewDoctor = () => {
 
   const handleAddNewDoctor = async (e) => {
     e.preventDefault();
+
+    if (phone.length !== 11) {
+      toast.error("Phone number must be exactly 11 digits.");
+      return;
+    }
+
+    if (nic.length !== 13) {
+      toast.error("NIC must be exactly 13 digits.");
+      return;
+    }
+
+    if (!docAvatar) {
+      toast.error("Doctor avatar is required.");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const formData = new FormData();
@@ -127,16 +147,22 @@ const AddNewDoctor = () => {
                 onChange={(e) => setEmail(e.target.value)}
               />
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]{11}"
+                maxLength={11}
                 placeholder="Mobile Number"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => setPhone(sanitizeDigits(e.target.value, 11))}
               />
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]{13}"
+                maxLength={13}
                 placeholder="NIC"
                 value={nic}
-                onChange={(e) => setNic(e.target.value)}
+                onChange={(e) => setNic(sanitizeDigits(e.target.value, 13))}
               />
               <input
                 type={"date"}
