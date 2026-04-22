@@ -1,11 +1,20 @@
-import React, { useContext, useState } from "react";
+import {  useContext, useEffect, useState  } from "react";
 import { toast } from "react-toastify";
 import { Context } from "../context";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../api/client";
 
+const sanitizeDigits = (value, maxLength) => {
+  return value.replace(/\D/g, "").slice(0, maxLength);
+};
+
+const resolveRole = (rawRole) => {
+  return rawRole === "Doctor" ? "Doctor" : "Patient";
+};
+
 const Register = () => {
-  const { isAuthenticated, setIsAuthenticated, setUser } = useContext(Context);
+  const { isAuthenticated, user, setIsAuthenticated, setUser } = useContext(Context);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -14,18 +23,83 @@ const Register = () => {
   const [nic, setNic] = useState("");
   const [dob, setDob] = useState("");
   const [gender, setGender] = useState("");
+  const [role, setRole] = useState(() => resolveRole(searchParams.get("role")));
+  const [doctorDepartment, setDoctorDepartment] = useState("Pediatrics");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const departmentOptions = [
+    "Pediatrics",
+    "Orthopedics",
+    "Cardiology",
+    "Neurology",
+    "Oncology",
+    "Radiology",
+    "Physical Therapy",
+    "Dermatology",
+    "ENT",
+  ];
+
   const navigateTo = useNavigate();
+
+  useEffect(() => {
+    setRole(resolveRole(searchParams.get("role")));
+  }, [searchParams]);
+
+  const handleRoleChange = (nextRole) => {
+    const resolvedRole = resolveRole(nextRole);
+    setRole(resolvedRole);
+    if (resolvedRole === "Doctor") {
+      setSearchParams({ role: "Doctor" });
+      return;
+    }
+
+    setSearchParams({});
+  };
 
   const handleRegistration = async (e) => {
     e.preventDefault();
+
+    if (phone.length !== 11) {
+      toast.error("Phone number must be exactly 11 digits.");
+      return;
+    }
+
+    if (nic.length !== 13) {
+      toast.error("NIC must be exactly 13 digits.");
+      return;
+    }
+
+    if (role === "Doctor" && !doctorDepartment) {
+      toast.error("Please select a doctor department.");
+      return;
+    }
+
+    const payload = {
+      firstName,
+      lastName,
+      email,
+      phone,
+      nic,
+      dob,
+      gender,
+      password,
+    };
+
+    const registrationEndpoint =
+      role === "Doctor"
+        ? "/api/v1/user/doctor/register"
+        : "/api/v1/user/patient/register";
+
+    if (role === "Doctor") {
+      payload.doctorDepartment = doctorDepartment;
+    }
+
     setIsSubmitting(true);
     try {
       const res = await api.post(
-        "/api/v1/user/patient/register",
-        { firstName, lastName, email, phone, nic, dob, gender, password },
+        registrationEndpoint,
+        payload,
         {
           headers: { "Content-Type": "application/json" },
         }
@@ -33,7 +107,7 @@ const Register = () => {
       toast.success(res.data.message);
       setIsAuthenticated(true);
       setUser(res.data.user);
-      navigateTo("/");
+      navigateTo(role === "Doctor" ? "/doctor/appointments" : "/");
       setFirstName("");
       setLastName("");
       setEmail("");
@@ -41,6 +115,7 @@ const Register = () => {
       setNic("");
       setDob("");
       setGender("");
+      setDoctorDepartment("Pediatrics");
       setPassword("");
     } catch (error) {
       toast.error(error?.response?.data?.message || "Registration failed");
@@ -50,7 +125,7 @@ const Register = () => {
   };
 
   if (isAuthenticated) {
-    return <Navigate to={"/"} />;
+    return <Navigate to={user?.role === "Doctor" ? "/doctor/appointments" : "/"} />;
   }
 
   return (
@@ -85,18 +160,24 @@ const Register = () => {
               onChange={(e) => setEmail(e.target.value)}
             />
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]{11}"
+              maxLength={11}
               placeholder="Mobile Number"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(e) => setPhone(sanitizeDigits(e.target.value, 11))}
             />
           </div>
           <div>
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]{13}"
+              maxLength={13}
               placeholder="NIC"
               value={nic}
-              onChange={(e) => setNic(e.target.value)}
+              onChange={(e) => setNic(sanitizeDigits(e.target.value, 13))}
             />
             <input
               type={"date"}
@@ -104,6 +185,24 @@ const Register = () => {
               value={dob}
               onChange={(e) => setDob(e.target.value)}
             />
+          </div>
+          <div>
+            <select value={role} onChange={(e) => handleRoleChange(e.target.value)}>
+              <option value="Patient">Register as Patient</option>
+              <option value="Doctor">Register as Doctor</option>
+            </select>
+            {role === "Doctor" ? (
+              <select
+                value={doctorDepartment}
+                onChange={(e) => setDoctorDepartment(e.target.value)}
+              >
+                {departmentOptions.map((department) => (
+                  <option key={department} value={department}>
+                    {department}
+                  </option>
+                ))}
+              </select>
+            ) : null}
           </div>
           <div>
             <select value={gender} onChange={(e) => setGender(e.target.value)}>
@@ -127,7 +226,7 @@ const Register = () => {
           >
             <p style={{ marginBottom: 0 }}>Already Registered?</p>
             <Link
-              to={"/login"}
+              to={role === "Doctor" ? "/login?role=Doctor" : "/login"}
               style={{ textDecoration: "none", color: "#271776ca" }}
             >
               Login Now
