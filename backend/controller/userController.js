@@ -44,28 +44,63 @@ const uploadDoctorAvatarLocally = async (docAvatar) => {
   };
 };
 
-const seedFakeDoctorsIfEmpty = async () => {
-  const doctorCount = await User.countDocuments({ role: "Doctor" });
-  if (doctorCount > 0) {
-    return false;
-  }
+const createDoctorSeedKey = (doctor) => {
+  return `${String(doctor.firstName).trim().toLowerCase()}|${String(
+    doctor.lastName
+  )
+    .trim()
+    .toLowerCase()}|${String(doctor.doctorDepartment).trim().toLowerCase()}`;
+};
 
-  const seededDoctorsPayload = SEEDED_DOCTORS.map((doctor, index) => ({
+const buildSeededDoctorPayload = (doctor, index) => {
+  const localPart = `${doctor.firstName}.${doctor.lastName}.${doctor.doctorDepartment}`
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+
+  return {
     ...doctor,
-    email: `demo.doctor${index + 1}@zeecare.local`,
-    phone: `03${String(index + 100000000).slice(-9)}`,
-    nic: `${String(index + 1000000000000).slice(-13)}`,
-    dob: `1990-01-${String((index % 9) + 1).padStart(2, "0")}`,
-    password: "doctor1234",
+    email: `${localPart}.mock${index + 1}@zeecare.local`,
+    phone: `03${String(200000000 + index).slice(-9)}`,
+    nic: `${String(3000000000000 + index).slice(-13)}`,
+    dob: `1988-01-${String((index % 28) + 1).padStart(2, "0")}`,
+    password: "Doctor@12345",
     role: "Doctor",
     docAvatar: {
       public_id: `seeded-doctor-${index + 1}`,
       url: "https://via.placeholder.com/300x300.png?text=Doctor",
     },
-  }));
+  };
+};
 
-  await User.create(seededDoctorsPayload);
-  return true;
+const buildDefaultDoctorAvatar = (firstName, lastName) => {
+  const normalizedName = `${firstName}.${lastName}`
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+
+  return {
+    public_id: `doctor-default-${normalizedName || Date.now()}`,
+    url: "https://via.placeholder.com/300x300.png?text=Doctor",
+  };
+};
+
+const syncSeededDoctors = async () => {
+  const existingDoctors = await User.find({ role: "Doctor" }).select(
+    "firstName lastName doctorDepartment"
+  );
+  const existingKeys = new Set(
+    existingDoctors.map((doctor) => createDoctorSeedKey(doctor))
+  );
+
+  const doctorsToInsert = SEEDED_DOCTORS.filter(
+    (doctor) => !existingKeys.has(createDoctorSeedKey(doctor))
+  ).map((doctor, index) => buildSeededDoctorPayload(doctor, index));
+
+  if (doctorsToInsert.length === 0) {
+    return 0;
+  }
+
+  await User.create(doctorsToInsert);
+  return doctorsToInsert.length;
 };
 
 export const patientRegister = catchAsyncErrors(async (req, res, next) => {
@@ -101,6 +136,55 @@ export const patientRegister = catchAsyncErrors(async (req, res, next) => {
     role: "Patient",
   });
   generateToken(user, "User Registered!", 200, res);
+});
+
+export const doctorRegister = catchAsyncErrors(async (req, res, next) => {
+  const {
+    firstName,
+    lastName,
+    email,
+    phone,
+    nic,
+    dob,
+    gender,
+    password,
+    doctorDepartment,
+  } = req.body;
+
+  if (
+    !firstName ||
+    !lastName ||
+    !email ||
+    !phone ||
+    !nic ||
+    !dob ||
+    !gender ||
+    !password ||
+    !doctorDepartment
+  ) {
+    return next(new ErrorHandler("Please Fill Full Form!", 400));
+  }
+
+  const isRegistered = await User.findOne({ email });
+  if (isRegistered) {
+    return next(new ErrorHandler("Doctor With This Email Already Exists!", 400));
+  }
+
+  const doctor = await User.create({
+    firstName,
+    lastName,
+    email,
+    phone,
+    nic,
+    dob,
+    gender,
+    password,
+    role: "Doctor",
+    doctorDepartment,
+    docAvatar: buildDefaultDoctorAvatar(firstName, lastName),
+  });
+
+  generateToken(doctor, "Doctor Registered!", 200, res);
 });
 
 export const login = catchAsyncErrors(async (req, res, next) => {
@@ -256,11 +340,12 @@ export const addNewDoctor = catchAsyncErrors(async (req, res, next) => {
 });
 
 export const getAllDoctors = catchAsyncErrors(async (req, res, next) => {
-  const seeded = await seedFakeDoctorsIfEmpty();
+  const seededCount = await syncSeededDoctors();
   const doctors = await User.find({ role: "Doctor" });
   res.status(200).json({
     success: true,
-    seeded,
+    seeded: seededCount > 0,
+    seededCount,
     doctors,
   });
 });
@@ -276,7 +361,7 @@ export const getUserDetails = catchAsyncErrors(async (req, res, next) => {
 // Logout function for dashboard admin
 export const logoutAdmin = catchAsyncErrors(async (req, res, next) => {
   res
-    .status(201)
+    .status(200)
     .cookie("adminToken", "", {
       httpOnly: true,
       expires: new Date(Date.now()),
@@ -290,7 +375,7 @@ export const logoutAdmin = catchAsyncErrors(async (req, res, next) => {
 // Logout function for frontend patient
 export const logoutPatient = catchAsyncErrors(async (req, res, next) => {
   res
-    .status(201)
+    .status(200)
     .cookie("patientToken", "", {
       httpOnly: true,
       expires: new Date(Date.now()),
@@ -304,7 +389,7 @@ export const logoutPatient = catchAsyncErrors(async (req, res, next) => {
 // Logout function for doctor users
 export const logoutDoctor = catchAsyncErrors(async (req, res, next) => {
   res
-    .status(201)
+    .status(200)
     .cookie("doctorToken", "", {
       httpOnly: true,
       expires: new Date(Date.now()),
