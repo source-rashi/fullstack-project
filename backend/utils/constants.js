@@ -18,8 +18,20 @@ export const SEEDED_DOCTORS = [
     gender: "Female",
   },
   {
+    firstName: "Maira",
+    lastName: "Shah",
+    doctorDepartment: "Pediatrics",
+    gender: "Female",
+  },
+  {
     firstName: "Bilal",
     lastName: "Riaz",
+    doctorDepartment: "Orthopedics",
+    gender: "Male",
+  },
+  {
+    firstName: "Farhan",
+    lastName: "Siddiqui",
     doctorDepartment: "Orthopedics",
     gender: "Male",
   },
@@ -30,10 +42,22 @@ export const SEEDED_DOCTORS = [
     gender: "Female",
   },
   {
+    firstName: "Rehan",
+    lastName: "Iqbal",
+    doctorDepartment: "Cardiology",
+    gender: "Male",
+  },
+  {
     firstName: "Usman",
     lastName: "Tariq",
     doctorDepartment: "Neurology",
     gender: "Male",
+  },
+  {
+    firstName: "Komal",
+    lastName: "Aslam",
+    doctorDepartment: "Neurology",
+    gender: "Female",
   },
   {
     firstName: "Sana",
@@ -42,10 +66,22 @@ export const SEEDED_DOCTORS = [
     gender: "Female",
   },
   {
+    firstName: "Taimoor",
+    lastName: "Qazi",
+    doctorDepartment: "Oncology",
+    gender: "Male",
+  },
+  {
     firstName: "Hamza",
     lastName: "Qureshi",
     doctorDepartment: "Radiology",
     gender: "Male",
+  },
+  {
+    firstName: "Noreen",
+    lastName: "Fatima",
+    doctorDepartment: "Radiology",
+    gender: "Female",
   },
   {
     firstName: "Nadia",
@@ -54,8 +90,20 @@ export const SEEDED_DOCTORS = [
     gender: "Female",
   },
   {
+    firstName: "Danish",
+    lastName: "Malik",
+    doctorDepartment: "Physical Therapy",
+    gender: "Male",
+  },
+  {
     firstName: "Areeba",
     lastName: "Iqbal",
+    doctorDepartment: "Dermatology",
+    gender: "Female",
+  },
+  {
+    firstName: "Mehwish",
+    lastName: "Rauf",
     doctorDepartment: "Dermatology",
     gender: "Female",
   },
@@ -64,5 +112,11 @@ export const SEEDED_DOCTORS = [
     lastName: "Nawaz",
     doctorDepartment: "ENT",
     gender: "Male",
+  },
+  {
+    firstName: "Urooj",
+    lastName: "Nadeem",
+    doctorDepartment: "ENT",
+    gender: "Female",
   },
 ];
