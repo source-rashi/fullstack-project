@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import {  useContext, useEffect, useRef, useState  } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -10,27 +10,43 @@ import AddNewDoctor from "./components/AddNewDoctor";
 import Messages from "./components/Messages";
 import Doctors from "./components/Doctors";
 import { Context } from "./context";
-import { ToastContainer } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Sidebar from "./components/Sidebar";
 import AddNewAdmin from "./components/AddNewAdmin";
 import "./App.css";
 import { api } from "./api/client";
 
+const isAuthError = (error) => {
+  const status = error?.response?.status;
+  return [400, 401, 403, 404].includes(status);
+};
+
 const App = () => {
   const { isAuthenticated, setIsAuthenticated, setAdmin } =
     useContext(Context);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const hasCachedSessionRef = useRef(isAuthenticated);
 
   useEffect(() => {
+    const clearAuthState = () => {
+      setIsAuthenticated(false);
+      setAdmin({});
+    };
+
     const fetchUser = async () => {
       try {
         const response = await api.get("/api/v1/user/admin/me");
         setIsAuthenticated(true);
         setAdmin(response.data.user);
       } catch (error) {
-        setIsAuthenticated(false);
-        setAdmin({});
+        if (isAuthError(error) || !hasCachedSessionRef.current) {
+          clearAuthState();
+        } else {
+          toast.info(
+            "Could not verify admin session with server. Using cached login state."
+          );
+        }
       } finally {
         setIsCheckingAuth(false);
       }
