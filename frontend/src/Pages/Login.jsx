@@ -1,19 +1,39 @@
-import React, { useContext, useState } from "react";
+import {  useContext, useEffect, useState  } from "react";
 import { toast } from "react-toastify";
 import { Context } from "../context";
-import { Link, useNavigate, Navigate } from "react-router-dom";
+import { Link, useNavigate, Navigate, useSearchParams } from "react-router-dom";
 import { api } from "../api/client";
+
+const resolveRole = (rawRole) => {
+  return rawRole === "Doctor" ? "Doctor" : "Patient";
+};
 
 const Login = () => {
   const { isAuthenticated, user, setIsAuthenticated, setUser } = useContext(Context);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [role, setRole] = useState("Patient");
+  const [role, setRole] = useState(() => resolveRole(searchParams.get("role")));
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const navigateTo = useNavigate();
+
+  useEffect(() => {
+    setRole(resolveRole(searchParams.get("role")));
+  }, [searchParams]);
+
+  const handleRoleChange = (nextRole) => {
+    const resolvedRole = resolveRole(nextRole);
+    setRole(resolvedRole);
+    if (resolvedRole === "Doctor") {
+      setSearchParams({ role: "Doctor" });
+      return;
+    }
+
+    setSearchParams({});
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -72,7 +92,7 @@ const Login = () => {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
           />
-          <select value={role} onChange={(e) => setRole(e.target.value)}>
+          <select value={role} onChange={(e) => handleRoleChange(e.target.value)}>
             <option value="Patient">Patient</option>
             <option value="Doctor">Doctor</option>
           </select>
@@ -85,7 +105,7 @@ const Login = () => {
           >
             <p style={{ marginBottom: 0 }}>Not Registered?</p>
             <Link
-              to={"/register"}
+              to={role === "Doctor" ? "/register?role=Doctor" : "/register"}
               style={{ textDecoration: "none", color: "#271776ca" }}
             >
               Register Now
