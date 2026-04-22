@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import {  useContext, useState  } from "react";
 import { TiHome } from "react-icons/ti";
 import { RiLogoutBoxFill } from "react-icons/ri";
 import { AiFillMessage } from "react-icons/ai";
@@ -24,7 +24,7 @@ const Sidebar = () => {
 
     setIsLoggingOut(true);
     await api
-      .get("/api/v1/user/admin/logout")
+      .post("/api/v1/user/admin/logout")
       .then((res) => {
         toast.success(res.data.message);
         setIsAuthenticated(false);
