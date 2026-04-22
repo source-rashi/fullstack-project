@@ -1,7 +1,25 @@
-import React, { useEffect } from "react";
+import {  useEffect  } from "react";
 import { useState } from "react";
 import { toast } from "react-toastify";
 import { api } from "../api/client";
+
+const unknownDoctorModeValue = import.meta.env.VITE_APPOINTMENT_ALLOW_UNKNOWN_DOCTOR;
+const isUnknownDoctorModeEnabled =
+  typeof unknownDoctorModeValue === "undefined"
+    ? true
+    : String(unknownDoctorModeValue).toLowerCase() === "true";
+
+const sanitizeDigits = (value, maxLength) => {
+  return value.replace(/\D/g, "").slice(0, maxLength);
+};
+
+const getTodayAsInputDate = () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
 
 const fallbackDoctors = [
   {
@@ -10,8 +28,18 @@ const fallbackDoctors = [
     doctorDepartment: "Pediatrics",
   },
   {
+    firstName: "Maira",
+    lastName: "Shah",
+    doctorDepartment: "Pediatrics",
+  },
+  {
     firstName: "Bilal",
     lastName: "Riaz",
+    doctorDepartment: "Orthopedics",
+  },
+  {
+    firstName: "Farhan",
+    lastName: "Siddiqui",
     doctorDepartment: "Orthopedics",
   },
   {
@@ -20,8 +48,18 @@ const fallbackDoctors = [
     doctorDepartment: "Cardiology",
   },
   {
+    firstName: "Rehan",
+    lastName: "Iqbal",
+    doctorDepartment: "Cardiology",
+  },
+  {
     firstName: "Usman",
     lastName: "Tariq",
+    doctorDepartment: "Neurology",
+  },
+  {
+    firstName: "Komal",
+    lastName: "Aslam",
     doctorDepartment: "Neurology",
   },
   {
@@ -30,8 +68,18 @@ const fallbackDoctors = [
     doctorDepartment: "Oncology",
   },
   {
+    firstName: "Taimoor",
+    lastName: "Qazi",
+    doctorDepartment: "Oncology",
+  },
+  {
     firstName: "Hamza",
     lastName: "Qureshi",
+    doctorDepartment: "Radiology",
+  },
+  {
+    firstName: "Noreen",
+    lastName: "Fatima",
     doctorDepartment: "Radiology",
   },
   {
@@ -40,13 +88,28 @@ const fallbackDoctors = [
     doctorDepartment: "Physical Therapy",
   },
   {
+    firstName: "Danish",
+    lastName: "Malik",
+    doctorDepartment: "Physical Therapy",
+  },
+  {
     firstName: "Areeba",
     lastName: "Iqbal",
     doctorDepartment: "Dermatology",
   },
   {
+    firstName: "Mehwish",
+    lastName: "Rauf",
+    doctorDepartment: "Dermatology",
+  },
+  {
     firstName: "Sameer",
     lastName: "Nawaz",
+    doctorDepartment: "ENT",
+  },
+  {
+    firstName: "Urooj",
+    lastName: "Nadeem",
     doctorDepartment: "ENT",
   },
 ];
@@ -63,10 +126,11 @@ const AppointmentForm = () => {
   const [department, setDepartment] = useState("Pediatrics");
   const [doctorFirstName, setDoctorFirstName] = useState("");
   const [doctorLastName, setDoctorLastName] = useState("");
+  const [isManualDoctorEntry, setIsManualDoctorEntry] = useState(false);
   const [address, setAddress] = useState("");
   const [hasVisited, setHasVisited] = useState(false);
-  const [isFetchingDoctors, setIsFetchingDoctors] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const minAppointmentDate = getTodayAsInputDate();
 
   const departmentsArray = [
     "Pediatrics",
@@ -81,27 +145,85 @@ const AppointmentForm = () => {
   ];
 
   const [doctors, setDoctors] = useState([]);
+  const [isLoadingDoctors, setIsLoadingDoctors] = useState(true);
+  const [isUsingFallbackDoctors, setIsUsingFallbackDoctors] = useState(false);
+
   useEffect(() => {
     const fetchDoctors = async () => {
+      setIsLoadingDoctors(true);
       try {
         const { data } = await api.get("/api/v1/user/doctors");
         if (data?.doctors?.length > 0) {
           setDoctors(data.doctors);
-        } else {
-          setDoctors(fallbackDoctors);
-          toast.info("Using demo doctors list.");
+          setIsUsingFallbackDoctors(false);
+          return;
         }
+
+        setDoctors(fallbackDoctors);
+        setIsUsingFallbackDoctors(true);
+        toast.info("No doctors were found in backend. Showing demo doctors only.");
       } catch (error) {
         setDoctors(fallbackDoctors);
-        toast.info("Using demo doctors list.");
+        setIsUsingFallbackDoctors(true);
+        toast.info(
+          isUnknownDoctorModeEnabled
+            ? "Using demo doctors list. Demo mode allows booking unknown doctors."
+            : "Using demo doctors list. Booking is disabled until backend doctors load."
+        );
       } finally {
-        setIsFetchingDoctors(false);
+        setIsLoadingDoctors(false);
       }
     };
+
     fetchDoctors();
   }, []);
+
   const handleAppointment = async (e) => {
     e.preventDefault();
+
+    if (phone.length !== 11) {
+      toast.error("Phone number must be exactly 11 digits.");
+      return;
+    }
+
+    if (nic.length !== 13) {
+      toast.error("NIC must be exactly 13 digits.");
+      return;
+    }
+
+    if (isLoadingDoctors) {
+      if (isManualDoctorEntry) {
+        // Manual entry in demo mode does not depend on doctor list loading.
+      } else {
+        toast.error("Doctor list is still loading. Please wait.");
+        return;
+      }
+    }
+
+    if (
+      isUsingFallbackDoctors &&
+      !isUnknownDoctorModeEnabled &&
+      !isManualDoctorEntry
+    ) {
+      toast.error("Demo doctors cannot be booked. Please reload after backend is available.");
+      return;
+    }
+
+    if (!doctorFirstName || !doctorLastName) {
+      toast.error("Please select a doctor.");
+      return;
+    }
+
+    const selectedDate = appointmentDate
+      ? new Date(`${appointmentDate}T00:00:00`)
+      : null;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (selectedDate && selectedDate < today) {
+      toast.error("Appointment date cannot be in the past.");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const hasVisitedBool = Boolean(hasVisited);
@@ -138,6 +260,7 @@ const AppointmentForm = () => {
       setDepartment("Pediatrics");
       setDoctorFirstName("");
       setDoctorLastName("");
+      setIsManualDoctorEntry(false);
       setHasVisited(false);
       setAddress("");
     } catch (error) {
@@ -148,9 +271,19 @@ const AppointmentForm = () => {
   };
 
   const selectedDoctorValue =
-    doctorFirstName && doctorLastName
+    !isManualDoctorEntry && doctorFirstName && doctorLastName
       ? JSON.stringify({ firstName: doctorFirstName, lastName: doctorLastName })
       : "";
+
+  const filteredDoctors = doctors.filter(
+    (doctor) => doctor.doctorDepartment === department
+  );
+
+  const isDoctorSelectionBlockingSubmit =
+    (isLoadingDoctors && !isManualDoctorEntry) ||
+    (isUsingFallbackDoctors &&
+      !isUnknownDoctorModeEnabled &&
+      !isManualDoctorEntry);
 
   return (
     <>
@@ -179,18 +312,24 @@ const AppointmentForm = () => {
               onChange={(e) => setEmail(e.target.value)}
             />
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]{11}"
+              maxLength={11}
               placeholder="Mobile Number"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(e) => setPhone(sanitizeDigits(e.target.value, 11))}
             />
           </div>
           <div>
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]{13}"
+              maxLength={13}
               placeholder="NIC"
               value={nic}
-              onChange={(e) => setNic(e.target.value)}
+              onChange={(e) => setNic(sanitizeDigits(e.target.value, 13))}
             />
             <input
               type="date"
@@ -209,6 +348,7 @@ const AppointmentForm = () => {
               type="date"
               placeholder="Appointment Date"
               value={appointmentDate}
+              min={minAppointmentDate}
               onChange={(e) => setAppointmentDate(e.target.value)}
             />
           </div>
@@ -219,6 +359,7 @@ const AppointmentForm = () => {
                 setDepartment(e.target.value);
                 setDoctorFirstName("");
                 setDoctorLastName("");
+                setIsManualDoctorEntry(false);
               }}
             >
               {departmentsArray.map((depart, index) => {
@@ -262,24 +403,69 @@ const AppointmentForm = () => {
                 setDoctorFirstName(selectedDoctor.firstName);
                 setDoctorLastName(selectedDoctor.lastName);
               }}
-              disabled={!department || isFetchingDoctors}
+              disabled={!department || isLoadingDoctors || isManualDoctorEntry}
             >
-              <option value="">Select Doctor</option>
-              {doctors
-                .filter((doctor) => doctor.doctorDepartment === department)
-                .map((doctor, index) => (
-                  <option
-                    key={index}
-                    value={JSON.stringify({
-                      firstName: doctor.firstName,
-                      lastName: doctor.lastName,
-                    })}
-                  >
-                    {doctor.firstName} {doctor.lastName}
-                  </option>
-                ))}
+              <option value="">
+                {isLoadingDoctors ? "Loading doctors..." : "Select Doctor"}
+              </option>
+              {filteredDoctors.map((doctor, index) => (
+                <option
+                  key={index}
+                  value={JSON.stringify({
+                    firstName: doctor.firstName,
+                    lastName: doctor.lastName,
+                  })}
+                >
+                  {doctor.firstName} {doctor.lastName}
+                </option>
+              ))}
             </select>
           </div>
+          {isUnknownDoctorModeEnabled ? (
+            <div
+              style={{
+                gap: "10px",
+                justifyContent: "flex-start",
+                flexDirection: "row",
+              }}
+            >
+              <p style={{ marginBottom: 0 }}>Enter doctor manually (demo mode)?</p>
+              <input
+                type="checkbox"
+                checked={isManualDoctorEntry}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  setIsManualDoctorEntry(checked);
+                  setDoctorFirstName("");
+                  setDoctorLastName("");
+                }}
+                style={{ flex: "none", width: "25px" }}
+              />
+            </div>
+          ) : null}
+          {isManualDoctorEntry ? (
+            <div>
+              <input
+                type="text"
+                placeholder="Doctor First Name"
+                value={doctorFirstName}
+                onChange={(e) => setDoctorFirstName(e.target.value)}
+              />
+              <input
+                type="text"
+                placeholder="Doctor Last Name"
+                value={doctorLastName}
+                onChange={(e) => setDoctorLastName(e.target.value)}
+              />
+            </div>
+          ) : null}
+          {isUsingFallbackDoctors ? (
+            <p style={{ color: "#8a1f11", marginTop: "8px" }}>
+              {isUnknownDoctorModeEnabled
+                ? "Demo doctor list is active. Demo mode allows booking unknown doctors."
+                : "Demo doctor list is active. Booking is disabled until backend doctors are loaded."}
+            </p>
+          ) : null}
           <textarea
             rows="10"
             value={address}
@@ -304,7 +490,7 @@ const AppointmentForm = () => {
           <button
             type="submit"
             style={{ margin: "0 auto" }}
-            disabled={isSubmitting || isFetchingDoctors}
+            disabled={isSubmitting || isDoctorSelectionBlockingSubmit}
           >
             {isSubmitting ? "Booking Appointment..." : "GET APPOINTMENT"}
           </button>
