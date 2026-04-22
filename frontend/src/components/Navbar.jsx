@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import {  useContext, useState  } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { toast } from "react-toastify";
@@ -23,7 +23,7 @@ const Navbar = () => {
         : "/api/v1/user/patient/logout";
 
     await api
-      .get(logoutEndpoint)
+      .post(logoutEndpoint)
       .then((res) => {
         toast.success(res.data.message);
         setIsAuthenticated(false);
@@ -40,6 +40,10 @@ const Navbar = () => {
 
   const goToLogin = () => {
     navigateTo("/login");
+  };
+
+  const goToRegister = () => {
+    navigateTo("/register");
   };
 
   return (
@@ -68,6 +72,16 @@ const Navbar = () => {
                 Doctor Panel
               </Link>
             ) : null}
+            {!isAuthenticated ? (
+              <>
+                <Link to={"/login?role=Doctor"} onClick={() => setShow(!show)}>
+                  Doctor Login
+                </Link>
+                <Link to={"/register?role=Doctor"} onClick={() => setShow(!show)}>
+                  Doctor Register
+                </Link>
+              </>
+            ) : null}
             <Link to={"/about"} onClick={() => setShow(!show)}>
               About Us
             </Link>
@@ -77,9 +91,14 @@ const Navbar = () => {
               {isLoggingOut ? "LOGGING OUT..." : "LOGOUT"}
             </button>
           ) : (
-            <button className="loginBtn btn" onClick={goToLogin}>
-              LOGIN
-            </button>
+            <div style={{ display: "flex", gap: "10px" }}>
+              <button className="loginBtn btn" onClick={goToLogin}>
+                LOGIN
+              </button>
+              <button className="loginBtn btn" onClick={goToRegister}>
+                REGISTER
+              </button>
+            </div>
           )}
         </div>
         <div className="hamburger" onClick={() => setShow(!show)}>
