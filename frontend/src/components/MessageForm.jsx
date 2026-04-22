@@ -1,6 +1,10 @@
-import React, { useState } from "react";
+import {  useState  } from "react";
 import { toast } from "react-toastify";
 import { api } from "../api/client";
+
+const sanitizeDigits = (value, maxLength) => {
+  return value.replace(/\D/g, "").slice(0, maxLength);
+};
 
 const MessageForm = () => {
   const [firstName, setFirstName] = useState("");
@@ -12,6 +16,12 @@ const MessageForm = () => {
 
   const handleMessage = async (e) => {
     e.preventDefault();
+
+    if (phone.length !== 11) {
+      toast.error("Phone number must be exactly 11 digits.");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const res = await api.post(
@@ -61,10 +71,13 @@ const MessageForm = () => {
               onChange={(e) => setEmail(e.target.value)}
             />
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]{11}"
+              maxLength={11}
               placeholder="Mobile Number"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(e) => setPhone(sanitizeDigits(e.target.value, 11))}
             />
           </div>
           <textarea
