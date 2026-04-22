@@ -1,2 +1,4 @@
 node_modules
 backend/config.env
+frontend/dist
+dashboard/dist
