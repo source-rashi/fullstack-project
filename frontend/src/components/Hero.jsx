@@ -1,4 +1,5 @@
-import React from "react";
+
+import PropTypes from "prop-types";
 
 const Hero = ({ title, imageUrl }) => {
   return (
@@ -10,7 +11,7 @@ const Hero = ({ title, imageUrl }) => {
             ZeeCare Medical Institute is a state-of-the-art facility dedicated
             to providing comprehensive healthcare services with compassion and
             expertise. Our team of skilled professionals is committed to
-            delivering personalized care tailored to each patient's needs. At
+            delivering personalized care tailored to each patient&apos;s needs. At
             ZeeCare, we prioritize your well-being, ensuring a harmonious
             journey towards optimal health and wellness.
           </p>
@@ -24,6 +25,11 @@ const Hero = ({ title, imageUrl }) => {
       </div>
     </>
   );
+};
+
+Hero.propTypes = {
+  title: PropTypes.string.isRequired,
+  imageUrl: PropTypes.string.isRequired,
 };
 
 export default Hero;
