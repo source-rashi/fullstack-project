@@ -72,7 +72,7 @@ describe("frontend auth and form behavior", () => {
       target: { value: "alice@example.com" },
     });
     fireEvent.change(formQueries.getByPlaceholderText("Mobile Number"), {
-      target: { value: "0300111222" },
+      target: { value: "030011122" },
     });
     fireEvent.change(formQueries.getByPlaceholderText("NIC"), {
       target: { value: "1234567890123" },
@@ -135,7 +135,7 @@ describe("frontend auth and form behavior", () => {
           firstName: "John",
           lastName: "Doe",
           email: "john@example.com",
-          phone: "03001234567",
+          phone: "0300123456",
           message: "This is a valid inquiry message body.",
         },
         {

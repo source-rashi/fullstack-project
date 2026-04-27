@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import { GoCheckCircleFill } from "react-icons/go";
 import { AiFillCloseCircle } from "react-icons/ai";
 import { api } from "../api/client";
+import LiveClock from "./LiveClock";
 
 const Dashboard = () => {
   const [appointments, setAppointments] = useState([]);
@@ -16,7 +17,7 @@ const Dashboard = () => {
     const parsedDate = new Date(rawDate);
     return Number.isNaN(parsedDate.getTime())
       ? rawDate
-      : parsedDate.toLocaleString();
+      : parsedDate.toLocaleString('en-IN');
   };
 
   useEffect(() => {
@@ -90,6 +91,7 @@ const Dashboard = () => {
     <>
       <section className="dashboard page">
         <div className="banner">
+          <LiveClock />
           <div className="firstBox">
             <img src="/doc.png" alt="docImg" />
             <div className="content">

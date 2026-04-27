@@ -7,6 +7,9 @@ import AboutUs from "./Pages/AboutUs";
 import Register from "./Pages/Register";
 import MyAppointments from "./Pages/MyAppointments";
 import DoctorAppointments from "./Pages/DoctorAppointments";
+import ContactUs from "./Pages/ContactUs";
+import AdminDashboard from "./Pages/AdminDashboard";
+import NotFound from "./Pages/NotFound";
 import Footer from "./components/Footer";
 import Navbar from "./components/Navbar";
 import { ToastContainer, toast } from "react-toastify";
@@ -20,6 +23,12 @@ const isAuthError = (error) => {
   return [400, 401, 403, 404].includes(status);
 };
 
+const AdminRoute = ({ children }) => {
+  const { user } = useContext(Context);
+  if (!user || user.role !== "Admin") return <Navigate to="/login" />;
+  return children;
+};
+
 const App = () => {
   const { isAuthenticated, user, setIsAuthenticated, setUser } =
     useContext(Context);
@@ -30,31 +39,27 @@ const App = () => {
 
   useEffect(() => {
     const clearAuthState = () => {
+      window.localStorage.removeItem("token");
       setIsAuthenticated(false);
       setUser({});
     };
 
     const fetchUser = async () => {
       try {
-        const response = await api.get("/api/v1/user/patient/me");
-        setIsAuthenticated(true);
-        setUser(response.data.user);
-      } catch (patientError) {
-        try {
-          const response = await api.get("/api/v1/user/doctor/me");
+        const response = await api.get("/api/v1/user/me");
+        if (response?.data?.isAuthenticated && response?.data?.user) {
           setIsAuthenticated(true);
           setUser(response.data.user);
-        } catch (doctorError) {
-          const shouldClearSession =
-            isAuthError(patientError) && isAuthError(doctorError);
-
-          if (shouldClearSession || !hasCachedSessionRef.current) {
-            clearAuthState();
-          } else {
-            toast.info(
-              "Could not verify session with server. Using cached login state."
-            );
-          }
+        } else {
+          clearAuthState();
+        }
+      } catch (error) {
+        if (!hasCachedSessionRef.current || isAuthError(error)) {
+          clearAuthState();
+        } else {
+          toast.info(
+            "Could not verify session with server. Using cached login state."
+          );
         }
       } finally {
         setIsCheckingAuth(false);
@@ -104,8 +109,11 @@ const App = () => {
             }
           />
           <Route path="/about" element={<AboutUs />} />
+          <Route path="/contact" element={<ContactUs />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
         <Footer />
         <ToastContainer position="top-center" />

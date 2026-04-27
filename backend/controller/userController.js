@@ -6,6 +6,7 @@ import cloudinary from "cloudinary";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import jwt from "jsonwebtoken";
 import { SEEDED_DOCTORS } from "../utils/constants.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -60,7 +61,7 @@ const buildSeededDoctorPayload = (doctor, index) => {
   return {
     ...doctor,
     email: `${localPart}.mock${index + 1}@zeecare.local`,
-    phone: `03${String(200000000 + index).slice(-9)}`,
+    phone: `03${String(20000000 + index).slice(-8)}`,
     nic: `${String(3000000000000 + index).slice(-13)}`,
     dob: `1988-01-${String((index % 28) + 1).padStart(2, "0")}`,
     password: "Doctor@12345",
@@ -124,6 +125,10 @@ export const patientRegister = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("User already Registered!", 400));
   }
 
+  if (phone.length !== 10) {
+    return next(new ErrorHandler("Phone number must be exactly 10 digits.", 400));
+  }
+
   const user = await User.create({
     firstName,
     lastName,
@@ -170,6 +175,10 @@ export const doctorRegister = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("Doctor With This Email Already Exists!", 400));
   }
 
+  if (phone.length !== 10) {
+    return next(new ErrorHandler("Phone number must be exactly 10 digits.", 400));
+  }
+
   const doctor = await User.create({
     firstName,
     lastName,
@@ -188,14 +197,9 @@ export const doctorRegister = catchAsyncErrors(async (req, res, next) => {
 });
 
 export const login = catchAsyncErrors(async (req, res, next) => {
-  const { email, password, confirmPassword, role } = req.body;
-  if (!email || !password || !confirmPassword || !role) {
+  const { email, password, role } = req.body;
+  if (!email || !password || !role) {
     return next(new ErrorHandler("Please Fill Full Form!", 400));
-  }
-  if (password !== confirmPassword) {
-    return next(
-      new ErrorHandler("Password & Confirm Password Do Not Match!", 400)
-    );
   }
   const user = await User.findOne({ email }).select("+password");
   if (!user) {
@@ -206,10 +210,46 @@ export const login = catchAsyncErrors(async (req, res, next) => {
   if (!isPasswordMatch) {
     return next(new ErrorHandler("Invalid Email Or Password!", 400));
   }
-  if (role !== user.role) {
+  if (role.toLowerCase() !== user.role.toLowerCase()) {
     return next(new ErrorHandler(`User Not Found With This Role!`, 400));
   }
   generateToken(user, "Login Successfully!", 201, res);
+});
+
+export const getSessionUser = catchAsyncErrors(async (req, res) => {
+  const authCookieMap = [
+    { cookieName: "adminToken", role: "Admin" },
+    { cookieName: "doctorToken", role: "Doctor" },
+    { cookieName: "patientToken", role: "Patient" },
+  ];
+
+  for (const { cookieName, role } of authCookieMap) {
+    const token = req.cookies[cookieName];
+    if (!token) {
+      continue;
+    }
+
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+      const user = await User.findById(decoded.id);
+
+      if (user && user.role === role) {
+        return res.status(200).json({
+          success: true,
+          isAuthenticated: true,
+          user,
+        });
+      }
+    } catch (error) {
+      // Ignore invalid/expired role cookie and continue checking others.
+    }
+  }
+
+  return res.status(200).json({
+    success: true,
+    isAuthenticated: false,
+    user: null,
+  });
 });
 
 export const addNewAdmin = catchAsyncErrors(async (req, res, next) => {
@@ -231,6 +271,10 @@ export const addNewAdmin = catchAsyncErrors(async (req, res, next) => {
   const isRegistered = await User.findOne({ email });
   if (isRegistered) {
     return next(new ErrorHandler("Admin With This Email Already Exists!", 400));
+  }
+
+  if (phone.length !== 10) {
+    return next(new ErrorHandler("Phone number must be exactly 10 digits.", 400));
   }
 
   const admin = await User.create({
@@ -398,4 +442,27 @@ export const logoutDoctor = catchAsyncErrors(async (req, res, next) => {
       success: true,
       message: "Doctor Logged Out Successfully.",
     });
+});
+
+// Get all users for admin
+export const getAllUsers = catchAsyncErrors(async (req, res, next) => {
+  const users = await User.find();
+  res.status(200).json({
+    success: true,
+    users,
+  });
+});
+
+// Delete user for admin
+export const deleteUser = catchAsyncErrors(async (req, res, next) => {
+  const { id } = req.params;
+  const user = await User.findById(id);
+  if (!user) {
+    return next(new ErrorHandler("User not found!", 404));
+  }
+  await User.findByIdAndDelete(id);
+  res.status(200).json({
+    success: true,
+    message: "User deleted successfully.",
+  });
 });

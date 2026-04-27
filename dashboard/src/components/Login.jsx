@@ -7,7 +7,6 @@ import { api } from "../api/client";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { isAuthenticated, setIsAuthenticated, setAdmin } = useContext(Context);
@@ -20,7 +19,7 @@ const Login = () => {
     try {
       const res = await api.post(
         "/api/v1/user/login",
-        { email, password, confirmPassword, role: "Admin" },
+        { email, password, role: "Admin" },
         {
           headers: { "Content-Type": "application/json" },
         }
@@ -31,7 +30,6 @@ const Login = () => {
       navigateTo("/");
       setEmail("");
       setPassword("");
-      setConfirmPassword("");
     } catch (error) {
       toast.error(error?.response?.data?.message || "Login failed");
     } finally {
@@ -61,12 +59,6 @@ const Login = () => {
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="Confirm Password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
           />
           <div style={{ justifyContent: "center", alignItems: "center" }}>
             <button type="submit" disabled={isSubmitting}>

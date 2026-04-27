@@ -2,8 +2,11 @@ import express from "express";
 import {
   addNewAdmin,
   addNewDoctor,
+  deleteUser,
   doctorRegister,
   getAllDoctors,
+  getAllUsers,
+  getSessionUser,
   getUserDetails,
   login,
   logoutAdmin,
@@ -16,6 +19,7 @@ import {
   isDoctorAuthenticated,
   isPatientAuthenticated,
 } from "../middlewares/auth.js";
+import roleMiddleware from "../middlewares/roleMiddleware.js";
 
 const router = express.Router();
 
@@ -25,6 +29,10 @@ router.post("/login", login);
 router.post("/admin/addnew", isAdminAuthenticated, addNewAdmin);
 router.post("/doctor/addnew", isAdminAuthenticated, addNewDoctor);
 router.get("/doctors", getAllDoctors);
+router.get("/me", getSessionUser);
+router.get("/getall", isAdminAuthenticated, getAllUsers);
+router.get("/admin/all", roleMiddleware("Admin"), getAllUsers);
+router.delete("/admin/:id", roleMiddleware("Admin"), deleteUser);
 router.get("/patient/me", isPatientAuthenticated, getUserDetails);
 router.get("/doctor/me", isDoctorAuthenticated, getUserDetails);
 router.get("/admin/me", isAdminAuthenticated, getUserDetails);

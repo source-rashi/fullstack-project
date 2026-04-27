@@ -80,9 +80,6 @@ describe("dashboard auth and form behavior", () => {
     fireEvent.change(formQueries.getByPlaceholderText("Password"), {
       target: { value: "Admin12345" },
     });
-    fireEvent.change(formQueries.getByPlaceholderText("Confirm Password"), {
-      target: { value: "Admin12345" },
-    });
 
     fireEvent.click(formQueries.getByRole("button", { name: /login/i }));
 
@@ -92,7 +89,6 @@ describe("dashboard auth and form behavior", () => {
         {
           email: "admin@example.com",
           password: "Admin12345",
-          confirmPassword: "Admin12345",
           role: "Admin",
         },
         {

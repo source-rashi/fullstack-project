@@ -5,7 +5,9 @@ import { Link, useNavigate, Navigate, useSearchParams } from "react-router-dom";
 import { api } from "../api/client";
 
 const resolveRole = (rawRole) => {
-  return rawRole === "Doctor" ? "Doctor" : "Patient";
+  if (rawRole === "Doctor") return "Doctor";
+  if (rawRole === "Admin") return "Admin";
+  return "Patient";
 };
 
 const Login = () => {
@@ -14,9 +16,9 @@ const Login = () => {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [role, setRole] = useState(() => resolveRole(searchParams.get("role")));
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const navigateTo = useNavigate();
 
@@ -31,6 +33,10 @@ const Login = () => {
       setSearchParams({ role: "Doctor" });
       return;
     }
+    if (resolvedRole === "Admin") {
+      setSearchParams({ role: "Admin" });
+      return;
+    }
 
     setSearchParams({});
   };
@@ -41,18 +47,20 @@ const Login = () => {
     try {
       const res = await api.post(
         "/api/v1/user/login",
-        { email, password, confirmPassword, role },
+        { email, password, role },
         {
           headers: { "Content-Type": "application/json" },
         }
       );
       toast.success(res.data.message);
+      if (res?.data?.token) {
+        window.localStorage.setItem("token", res.data.token);
+      }
       setIsAuthenticated(true);
       setUser(res.data.user);
-      navigateTo(role === "Doctor" ? "/doctor/appointments" : "/");
+      navigateTo(role === "Doctor" ? "/doctor/appointments" : role === "Admin" ? "/admin" : "/");
       setEmail("");
       setPassword("");
-      setConfirmPassword("");
     } catch (error) {
       toast.error(error?.response?.data?.message || "Login failed");
     } finally {
@@ -61,7 +69,8 @@ const Login = () => {
   };
 
   if (isAuthenticated) {
-    return <Navigate to={user?.role === "Doctor" ? "/doctor/appointments" : "/"} />;
+    const targetUrl = user?.role === "Doctor" ? "/doctor/appointments" : user?.role === "Admin" ? "/admin" : "/";
+    return <Navigate to={targetUrl} />;
   }
 
   return (
@@ -69,32 +78,46 @@ const Login = () => {
       <div className="container form-component login-form">
         <h2>Sign In</h2>
         <p>Please Login To Continue</p>
-        <p>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Placeat culpa
-          voluptas expedita itaque ex, totam ad quod error?
-        </p>
         <form onSubmit={handleLogin}>
           <input
-            type="text"
+            type="email"
+            autoComplete="username"
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="Confirm Password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-          />
+          <div style={{ position: 'relative' }}>
+            <input
+              type={showPassword ? "text" : "password"}
+              autoComplete="current-password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              style={{ width: '100%', paddingRight: '40px' }}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              style={{
+                position: 'absolute',
+                right: '10px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: '#888',
+                fontSize: '14px',
+                padding: 0
+              }}
+            >
+              {showPassword ? '🙈' : '👁️'}
+            </button>
+          </div>
           <select value={role} onChange={(e) => handleRoleChange(e.target.value)}>
             <option value="Patient">Patient</option>
             <option value="Doctor">Doctor</option>
+            <option value="Admin">Admin</option>
           </select>
           <div
             style={{

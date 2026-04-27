@@ -29,9 +29,9 @@ const userSchema = new mongoose.Schema(
     phone: {
       type: String,
       required: [true, "Phone Is Required!"],
-      minLength: [11, "Phone Number Must Contain Exact 11 Digits!"],
-      maxLength: [11, "Phone Number Must Contain Exact 11 Digits!"],
-      match: [/^\d{11}$/, "Phone Number Must Contain Exact 11 Digits!"],
+      minLength: [10, "Phone number must be exactly 10 digits."],
+      maxLength: [10, "Phone number must be exactly 10 digits."],
+      match: [/^\d{10}$/, "Phone number must be exactly 10 digits."],
       trim: true,
     },
     nic: {

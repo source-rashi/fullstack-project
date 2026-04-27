@@ -26,7 +26,12 @@ const Register = () => {
   const [role, setRole] = useState(() => resolveRole(searchParams.get("role")));
   const [doctorDepartment, setDoctorDepartment] = useState("Pediatrics");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [phoneError, setPhoneError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  // For Register only, also add:
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const departmentOptions = [
     "Pediatrics",
@@ -60,8 +65,8 @@ const Register = () => {
   const handleRegistration = async (e) => {
     e.preventDefault();
 
-    if (phone.length !== 11) {
-      toast.error("Phone number must be exactly 11 digits.");
+    if (phone.length !== 10) {
+      toast.error("Phone number must be exactly 10 digits.");
       return;
     }
 
@@ -72,6 +77,11 @@ const Register = () => {
 
     if (role === "Doctor" && !doctorDepartment) {
       toast.error("Please select a doctor department.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match.");
       return;
     }
 
@@ -117,6 +127,7 @@ const Register = () => {
       setGender("");
       setDoctorDepartment("Pediatrics");
       setPassword("");
+      setConfirmPassword("");
     } catch (error) {
       toast.error(error?.response?.data?.message || "Registration failed");
     } finally {
@@ -154,20 +165,35 @@ const Register = () => {
           </div>
           <div>
             <input
-              type="text"
+              type="email"
+              autoComplete="email"
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
             <input
-              type="text"
+              type="tel"
               inputMode="numeric"
-              pattern="[0-9]{11}"
-              maxLength={11}
+              pattern="\d{10}"
+              maxLength={10}
               placeholder="Mobile Number"
               value={phone}
-              onChange={(e) => setPhone(sanitizeDigits(e.target.value, 11))}
+              onChange={(e) => setPhone(sanitizeDigits(e.target.value, 10))}
+              onKeyPress={(e) => {
+                if (!/[0-9]/.test(e.key) || phone.length >= 10) e.preventDefault();
+              }}
+              onPaste={(e) => {
+                e.preventDefault();
+                const pasted = e.clipboardData.getData('text');
+                const sanitized = sanitizeDigits(pasted, 10);
+                setPhone(sanitized);
+              }}
+              onBlur={() => {
+                if (phone.length !== 10) setPhoneError("Phone number must be exactly 10 digits.");
+                else setPhoneError("");
+              }}
             />
+            {phoneError && <span className="error-message">{phoneError}</span>}
           </div>
           <div>
             <input
@@ -210,12 +236,62 @@ const Register = () => {
               <option value="Male">Male</option>
               <option value="Female">Female</option>
             </select>
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+            <div style={{ position: 'relative' }}>
+              <input
+                type={showPassword ? "text" : "password"}
+                autoComplete="new-password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                style={{ width: '100%', paddingRight: '2.5rem' }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(prev => !prev)}
+                style={{
+                  position: 'absolute',
+                  right: '10px',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 0,
+                  color: '#9ca3af',
+                  fontSize: '16px',
+                  lineHeight: 1
+                }}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? '🙈' : '👁'}
+              </button>
+            </div>
+            <div style={{ position: 'relative' }}>
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                autoComplete="new-password"
+                placeholder="Confirm Password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                style={{ width: '100%', paddingRight: '2.5rem' }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(prev => !prev)}
+                style={{
+                  position: 'absolute',
+                  right: '10px',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 0,
+                  color: '#9ca3af',
+                  fontSize: '16px',
+                  lineHeight: 1
+                }}
+                aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+              >
+                {showConfirmPassword ? '🙈' : '👁'}
+              </button>
+            </div>
           </div>
           <div
             style={{

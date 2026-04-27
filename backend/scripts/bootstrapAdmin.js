@@ -8,9 +8,9 @@ config({ path: "./config.env" });
 const defaults = {
   firstName: process.env.BOOTSTRAP_ADMIN_FIRST_NAME || "Local",
   lastName: process.env.BOOTSTRAP_ADMIN_LAST_NAME || "Admin",
-  email: process.env.BOOTSTRAP_ADMIN_EMAIL || "admin@hms.local",
-  password: process.env.BOOTSTRAP_ADMIN_PASSWORD || "Admin@12345",
-  phone: process.env.BOOTSTRAP_ADMIN_PHONE || "03001234567",
+  email: process.env.BOOTSTRAP_ADMIN_EMAIL || "admin@srmap.edu.in",
+  password: process.env.BOOTSTRAP_ADMIN_PASSWORD || "Admin@1234",
+  phone: process.env.BOOTSTRAP_ADMIN_PHONE || "8639000100",
   nic: process.env.BOOTSTRAP_ADMIN_NIC || "1234567890123",
   dob: process.env.BOOTSTRAP_ADMIN_DOB || "1990-01-01",
   gender: process.env.BOOTSTRAP_ADMIN_GENDER || "Male",
@@ -21,7 +21,17 @@ const createBootstrapAdmin = async () => {
 
   const existingAdmin = await User.findOne({ email: defaults.email });
   if (existingAdmin) {
-    console.log(`Admin already exists for ${defaults.email}`);
+    existingAdmin.firstName = defaults.firstName;
+    existingAdmin.lastName = defaults.lastName;
+    existingAdmin.phone = defaults.phone;
+    existingAdmin.nic = defaults.nic;
+    existingAdmin.dob = defaults.dob;
+    existingAdmin.gender = defaults.gender;
+    existingAdmin.role = "Admin";
+    existingAdmin.password = defaults.password;
+    await existingAdmin.save();
+
+    console.log(`Admin credentials refreshed for ${defaults.email}`);
     return;
   }
 

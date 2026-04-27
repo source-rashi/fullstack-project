@@ -67,15 +67,15 @@ const Footer = () => {
             <h4>Contact</h4>
             <div>
               <FaPhone />
-              <span>999-999-9999</span>
+              <span>+91 86390 01000</span>
             </div>
             <div>
               <MdEmail />
-              <span>zeelab@gmail.com</span>
+              <span>srmap@edu.in</span>
             </div>
             <div>
               <FaLocationArrow />
-              <span>Toronto, Canada</span>
+              <span>Neerukonda, Mangalagiri Mandal, Guntur District, Andhra Pradesh – 522240</span>
             </div>
           </div>
         </div>

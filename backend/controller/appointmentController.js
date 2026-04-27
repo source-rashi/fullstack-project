@@ -2,6 +2,7 @@ import { catchAsyncErrors } from "../middlewares/catchAsyncErrors.js";
 import ErrorHandler from "../middlewares/error.js";
 import { Appointment } from "../models/appointmentSchema.js";
 import { User } from "../models/userSchema.js";
+import { Billing } from "../models/billingSchema.js";
 
 const isUnknownDoctorBookingAllowed = () => {
   const envValue = process.env.APPOINTMENT_ALLOW_UNKNOWN_DOCTOR;
@@ -46,7 +47,7 @@ const createDemoDoctor = async ({
     firstName: normalizedFirstName,
     lastName: normalizedLastName,
     email: `${emailLocalPart}@hms.local`,
-    phone: createDigits(11),
+    phone: createDigits(10),
     nic: createDigits(13),
     dob: "1990-01-01",
     gender: "Male",
@@ -98,6 +99,10 @@ export const postAppointment = catchAsyncErrors(async (req, res, next) => {
 
   if (!doctorFirstNameValue || !doctorLastNameValue) {
     return next(new ErrorHandler("Please provide a valid doctor name!", 400));
+  }
+
+  if (phone.length !== 10) {
+    return next(new ErrorHandler("Phone number must be exactly 10 digits.", 400));
   }
 
   const matchedDoctors = await User.find({
@@ -239,4 +244,46 @@ export const deleteAppointment = catchAsyncErrors(async (req, res, next) => {
     success: true,
     message: "Appointment Deleted!",
   });
+});
+
+export const approveAppointment = catchAsyncErrors(async (req, res) => {
+  const appt = await Appointment.findByIdAndUpdate(
+    req.params.id, { status: 'approved' }, { new: true }
+  );
+  res.json(appt);
+});
+
+export const completeAppointment = catchAsyncErrors(async (req, res) => {
+  const appt = await Appointment.findByIdAndUpdate(
+    req.params.id,
+    { status: 'completed', doctorNotes: req.body.notes || '' },
+    { new: true }
+  ).populate('doctorId');
+
+  // Auto-create billing if not already present
+  const existing = await Billing.findOne({ appointmentId: appt._id });
+  if (!existing) {
+    const fee = appt.doctorId.consultationFee || 500;
+    const tax = parseFloat((fee * 0.18).toFixed(2));
+    await Billing.create({
+      appointmentId: appt._id,
+      patientId: appt.patientId,
+      doctorId: appt.doctorId._id,
+      amount: fee,
+      tax,
+      discount: 0,
+      totalAmount: parseFloat((fee + tax).toFixed(2)),
+      status: 'unpaid',
+      paymentMethod: '',
+      invoiceDate: new Date()
+    });
+  }
+  res.json(appt);
+});
+
+export const cancelAppointment = catchAsyncErrors(async (req, res) => {
+  const appt = await Appointment.findByIdAndUpdate(
+    req.params.id, { status: 'cancelled' }, { new: true }
+  );
+  res.json(appt);
 });

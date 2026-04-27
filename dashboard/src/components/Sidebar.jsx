@@ -6,6 +6,7 @@ import { GiHamburgerMenu } from "react-icons/gi";
 import { FaUserDoctor } from "react-icons/fa6";
 import { MdAddModerator } from "react-icons/md";
 import { IoPersonAddSharp } from "react-icons/io5";
+import { MdAdminPanelSettings } from "react-icons/md";
 import { toast } from "react-toastify";
 import { Context } from "../context";
 import { useNavigate } from "react-router-dom";
@@ -61,6 +62,10 @@ const Sidebar = () => {
     navigateTo("/admin/addnew");
     setShow(!show);
   };
+  const gotoAdminDashboard = () => {
+    navigateTo("/admin/dashboard");
+    setShow(!show);
+  };
 
   return (
     <>
@@ -70,6 +75,7 @@ const Sidebar = () => {
       >
         <div className="links">
           <TiHome onClick={gotoHomePage} />
+          <MdAdminPanelSettings onClick={gotoAdminDashboard} />
           <FaUserDoctor onClick={gotoDoctorsPage} />
           <MdAddModerator onClick={gotoAddNewAdmin} />
           <IoPersonAddSharp onClick={gotoAddNewDoctor} />

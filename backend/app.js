@@ -10,6 +10,9 @@ import { errorMiddleware } from "./middlewares/error.js";
 import messageRouter from "./router/messageRouter.js";
 import userRouter from "./router/userRouter.js";
 import appointmentRouter from "./router/appointmentRouter.js";
+import billingRouter from "./router/billingRouter.js";
+import dashboardRouter from "./router/dashboardRouter.js";
+import adminRouter from "./router/adminRouter.js";
 import { apiLimiter, authLimiter } from "./middlewares/rateLimiter.js";
 
 const app = express();
@@ -48,6 +51,10 @@ app.use("/api/v1/user/login", authLimiter);
 app.use("/api/v1/message", messageRouter);
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/appointment", appointmentRouter);
+app.use("/api/v1/billing", billingRouter);
+app.use("/api/v1/dashboard", dashboardRouter);
+app.use("/api/dashboard", dashboardRouter);
+app.use("/api/admin", adminRouter);
 
 app.use(errorMiddleware);
 export default app;

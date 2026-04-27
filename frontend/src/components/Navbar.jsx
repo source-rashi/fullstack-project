@@ -4,6 +4,7 @@ import { GiHamburgerMenu } from "react-icons/gi";
 import { toast } from "react-toastify";
 import { Context } from "../context";
 import { api } from "../api/client";
+import LiveClock from "./LiveClock";
 
 const Navbar = () => {
   const [show, setShow] = useState(false);
@@ -20,12 +21,15 @@ const Navbar = () => {
     const logoutEndpoint =
       user?.role === "Doctor"
         ? "/api/v1/user/doctor/logout"
+        : user?.role === "Admin"
+        ? "/api/v1/user/admin/logout"
         : "/api/v1/user/patient/logout";
 
     await api
       .post(logoutEndpoint)
       .then((res) => {
         toast.success(res.data.message);
+        window.localStorage.removeItem("token");
         setIsAuthenticated(false);
         setUser({});
         navigateTo("/login");
@@ -72,34 +76,37 @@ const Navbar = () => {
                 Doctor Panel
               </Link>
             ) : null}
+            {user?.role === 'Admin' && (
+              <Link to={"/admin"} onClick={() => setShow(!show)}>
+                Admin Panel
+              </Link>
+            )}
             {!isAuthenticated ? (
-              <>
-                <Link to={"/login?role=Doctor"} onClick={() => setShow(!show)}>
-                  Doctor Login
-                </Link>
-                <Link to={"/register?role=Doctor"} onClick={() => setShow(!show)}>
-                  Doctor Register
-                </Link>
-              </>
+              <Link to={"/login?role=Doctor"} onClick={() => setShow(!show)}>
+                Doctor
+              </Link>
             ) : null}
             <Link to={"/about"} onClick={() => setShow(!show)}>
               About Us
             </Link>
           </div>
-          {isAuthenticated ? (
-            <button className="logoutBtn btn" onClick={handleLogout} disabled={isLoggingOut}>
-              {isLoggingOut ? "LOGGING OUT..." : "LOGOUT"}
-            </button>
-          ) : (
-            <div style={{ display: "flex", gap: "10px" }}>
-              <button className="loginBtn btn" onClick={goToLogin}>
-                LOGIN
+          <div className="navbar-actions">
+            {isAuthenticated ? (
+              <button className="logoutBtn btn" onClick={handleLogout} disabled={isLoggingOut}>
+                {isLoggingOut ? "LOGGING OUT..." : "LOGOUT"}
               </button>
-              <button className="loginBtn btn" onClick={goToRegister}>
-                REGISTER
-              </button>
-            </div>
-          )}
+            ) : (
+              <div className="navbar-auth-buttons">
+                <button className="loginBtn btn" onClick={goToLogin}>
+                  LOGIN
+                </button>
+                <button className="loginBtn btn" onClick={goToRegister}>
+                  REGISTER
+                </button>
+              </div>
+            )}
+            <LiveClock />
+          </div>
         </div>
         <div className="hamburger" onClick={() => setShow(!show)}>
           <GiHamburgerMenu />

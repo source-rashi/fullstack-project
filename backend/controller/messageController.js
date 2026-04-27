@@ -35,6 +35,10 @@ export const sendMessage = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("Links are not allowed in message body!", 400));
   }
 
+  if (normalizedMessage.phone.length !== 10) {
+    return next(new ErrorHandler("Phone number must be exactly 10 digits.", 400));
+  }
+
   await Message.create(normalizedMessage);
   res.status(200).json({
     success: true,

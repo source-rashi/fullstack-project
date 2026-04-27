@@ -23,6 +23,7 @@ const AddNewDoctor = () => {
   const [docAvatar, setDocAvatar] = useState("");
   const [docAvatarPreview, setDocAvatarPreview] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [phoneError, setPhoneError] = useState("");
 
   const navigateTo = useNavigate();
 
@@ -56,8 +57,8 @@ const AddNewDoctor = () => {
   const handleAddNewDoctor = async (e) => {
     e.preventDefault();
 
-    if (phone.length !== 11) {
-      toast.error("Phone number must be exactly 11 digits.");
+    if (phone.length !== 10) {
+      toast.error("Phone number must be exactly 10 digits.");
       return;
     }
 
@@ -147,14 +148,28 @@ const AddNewDoctor = () => {
                 onChange={(e) => setEmail(e.target.value)}
               />
               <input
-                type="text"
+                type="tel"
                 inputMode="numeric"
-                pattern="[0-9]{11}"
-                maxLength={11}
+                pattern="\d{10}"
+                maxLength={10}
                 placeholder="Mobile Number"
                 value={phone}
-                onChange={(e) => setPhone(sanitizeDigits(e.target.value, 11))}
+                onChange={(e) => setPhone(sanitizeDigits(e.target.value, 10))}
+                onKeyPress={(e) => {
+                  if (!/[0-9]/.test(e.key) || phone.length >= 10) e.preventDefault();
+                }}
+                onPaste={(e) => {
+                  e.preventDefault();
+                  const pasted = e.clipboardData.getData('text');
+                  const sanitized = sanitizeDigits(pasted, 10);
+                  setPhone(sanitized);
+                }}
+                onBlur={() => {
+                  if (phone.length !== 10) setPhoneError("Phone number must be exactly 10 digits.");
+                  else setPhoneError("");
+                }}
               />
+              {phoneError && <span className="error-message">{phoneError}</span>}
               <input
                 type="text"
                 inputMode="numeric"
