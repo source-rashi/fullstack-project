@@ -184,7 +184,7 @@ describe("frontend auth and form behavior", () => {
       doctorOptions.getByRole("option", { name: "Real Doctor" })
     ).toBeInTheDocument();
     expect(
-      doctorOptions.queryByRole("option", { name: "Ayesha Khan" })
+      doctorOptions.queryByRole("option", { name: "Rashi Bala" })
     ).not.toBeInTheDocument();
   });
 

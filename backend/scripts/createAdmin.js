@@ -4,7 +4,7 @@ import { User } from '../models/userSchema.js';
 
 config({ path: '../config.env' });
 
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017';
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017';
 const dbName = process.env.MONGO_DB_NAME || "MERN_STACK_HOSPITAL_MANAGEMENT_SYSTEM_DEPLOYED";
 
 mongoose.connect(MONGO_URI, { dbName }).then(async () => {

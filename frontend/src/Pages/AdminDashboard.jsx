@@ -96,20 +96,6 @@ export default function AdminDashboard() {
   const isUnauthorized = (error) => error?.response?.status === 401;
 
   useEffect(() => {
-    const footer = document.querySelector("footer.container");
-    if (!footer) {
-      return undefined;
-    }
-
-    const previousDisplay = footer.style.display;
-    footer.style.display = "none";
-
-    return () => {
-      footer.style.display = previousDisplay;
-    };
-  }, []);
-
-  useEffect(() => {
     if (!isAdminSession) {
       return;
     }
@@ -232,29 +218,29 @@ export default function AdminDashboard() {
     {
       label: "Total Patients",
       value: stats.totalPatients,
-      bg: "#EFF6FF",
-      color: "#1D4ED8",
+      bg: "#f3f4f6",
+      color: "#111827",
       icon: "👤",
     },
     {
       label: "Total Doctors",
       value: stats.totalDoctors,
-      bg: "#F0FDF4",
-      color: "#16A34A",
+      bg: "#f3f4f6",
+      color: "#111827",
       icon: "🩺",
     },
     {
       label: "Today's Appointments",
       value: stats.todayAppts,
-      bg: "#FFFBEB",
-      color: "#D97706",
+      bg: "#f3f4f6",
+      color: "#111827",
       icon: "📅",
     },
     {
       label: "Unpaid Bills",
       value: stats.unpaidBills,
-      bg: "#FFF1F2",
-      color: "#E11D48",
+      bg: "#f3f4f6",
+      color: "#111827",
       icon: "💰",
     },
   ];
@@ -269,41 +255,40 @@ export default function AdminDashboard() {
         marginTop: "78px",
         minHeight: "calc(100vh - 78px)",
         padding: "28px 0 56px",
-        background:
-          "radial-gradient(circle at 12% 12%, #e0f2fe 0%, #f8fafc 42%, #fff7ed 100%)",
+        background: "linear-gradient(180deg, #f7f7f7 0%, #e5e5e5 100%)",
       }}
     >
       <div className="container">
         <div
           style={{
-            background: "rgba(255,255,255,0.85)",
-            border: "1px solid #e2e8f0",
+            background: "rgba(255,255,255,0.92)",
+            border: "1px solid #d1d5db",
             borderRadius: "18px",
             padding: "18px 22px",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
             gap: "16px",
-            backdropFilter: "blur(8px)",
+            backdropFilter: "blur(6px)",
           }}
         >
           <div>
-            <h2 style={{ fontSize: "28px", color: "#0f172a", marginBottom: "4px" }}>
-              Admin Dashboard
+            <h2 style={{ fontSize: "28px", color: "#111827", marginBottom: "4px" }}>
+              SRM Care Admin
             </h2>
-            <p style={{ fontSize: "14px", color: "#64748b" }}>
-              Hospital management overview
+            <p style={{ fontSize: "14px", color: "#6b7280" }}>
+              SRM Care operations overview
             </p>
           </div>
           <div
             style={{
               background: "#fff",
-              border: "1px solid #e2e8f0",
+              border: "1px solid #d1d5db",
               borderRadius: "10px",
               padding: "8px 12px",
               fontSize: "13px",
               fontWeight: 600,
-              color: "#334155",
+              color: "#111827",
             }}
           >
             {formatDate(new Date())}
@@ -325,7 +310,7 @@ export default function AdminDashboard() {
                 background: "#fff",
                 borderRadius: "14px",
                 padding: "14px",
-                border: "1px solid #e2e8f0",
+                border: "1px solid #d1d5db",
                 display: "flex",
                 alignItems: "center",
                 gap: "12px",
@@ -341,16 +326,16 @@ export default function AdminDashboard() {
                   background: card.bg,
                   color: card.color,
                   fontSize: "20px",
-                  border: `1px solid ${card.color}22`,
+                  border: "1px solid #d1d5db",
                 }}
               >
                 {card.icon}
               </div>
               <div>
-                <p style={{ fontSize: "13px", color: "#64748b", marginBottom: "2px" }}>
+                <p style={{ fontSize: "13px", color: "#6b7280", marginBottom: "2px" }}>
                   {card.label}
                 </p>
-                <h3 style={{ fontSize: "24px", color: "#0f172a" }}>{card.value || 0}</h3>
+                <h3 style={{ fontSize: "24px", color: "#111827" }}>{card.value || 0}</h3>
               </div>
             </div>
           ))}
@@ -359,7 +344,7 @@ export default function AdminDashboard() {
         <div
           style={{
             display: "inline-flex",
-            background: "#e2e8f0",
+            background: "#e5e7eb",
             borderRadius: "10px",
             padding: "4px",
             marginTop: "20px",
@@ -379,7 +364,7 @@ export default function AdminDashboard() {
                 fontSize: "14px",
                 fontWeight: 600,
                 background: tab === item ? "#fff" : "transparent",
-                color: tab === item ? "#0f172a" : "#64748b",
+                color: tab === item ? "#111827" : "#6b7280",
                 boxShadow: tab === item ? "0 1px 2px rgba(0,0,0,0.08)" : "none",
                 transition: "all 0.15s",
               }}
@@ -393,17 +378,17 @@ export default function AdminDashboard() {
           style={{
             marginTop: "16px",
             background: "#fff",
-            border: "1px solid #e2e8f0",
+            border: "1px solid #d1d5db",
             borderRadius: "16px",
             padding: "16px",
           }}
         >
           {tab === "Overview" && (
             <div>
-              <h3 style={{ color: "#0f172a", fontSize: "22px", marginBottom: "8px" }}>
+              <h3 style={{ color: "#111827", fontSize: "22px", marginBottom: "8px" }}>
                 System Overview
               </h3>
-              <p style={{ color: "#64748b", fontSize: "14px", marginBottom: "14px" }}>
+              <p style={{ color: "#6b7280", fontSize: "14px", marginBottom: "14px" }}>
                 Select a tab above to view appointments, billing records, or manage users.
               </p>
               <div
@@ -419,14 +404,14 @@ export default function AdminDashboard() {
                     style={{
                       padding: "12px",
                       borderRadius: "10px",
-                      background: card.bg,
-                      border: "1px solid #e2e8f0",
+                      background: "#f9fafb",
+                      border: "1px solid #d1d5db",
                     }}
                   >
-                    <p style={{ color: "#64748b", fontSize: "13px", marginBottom: "6px" }}>
+                    <p style={{ color: "#6b7280", fontSize: "13px", marginBottom: "6px" }}>
                       {card.label}
                     </p>
-                    <h4 style={{ color: "#0f172a", fontSize: "20px" }}>{card.value || 0}</h4>
+                    <h4 style={{ color: "#111827", fontSize: "20px" }}>{card.value || 0}</h4>
                   </div>
                 ))}
               </div>
@@ -456,7 +441,7 @@ export default function AdminDashboard() {
                 <div style={{ overflowX: "auto" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "880px" }}>
                     <thead>
-                      <tr style={{ background: "#f8fafc" }}>
+                      <tr style={{ background: "#f3f4f6" }}>
                         {[
                           "Patient",
                           "Doctor",
@@ -470,8 +455,8 @@ export default function AdminDashboard() {
                             style={{
                               textAlign: "left",
                               padding: "10px",
-                              borderBottom: "1px solid #e2e8f0",
-                              color: "#334155",
+                              borderBottom: "1px solid #d1d5db",
+                              color: "#111827",
                               fontSize: "13px",
                             }}
                           >
@@ -485,7 +470,7 @@ export default function AdminDashboard() {
                         <tr>
                           <td
                             colSpan={6}
-                            style={{ padding: "14px", textAlign: "center", color: "#64748b" }}
+                            style={{ padding: "14px", textAlign: "center", color: "#6b7280" }}
                           >
                             No appointments found
                           </td>
@@ -502,7 +487,7 @@ export default function AdminDashboard() {
                                 style={{
                                   padding: "10px",
                                   borderBottom: "1px solid #f1f5f9",
-                                  color: "#0f172a",
+                                  color: "#111827",
                                   fontSize: "14px",
                                 }}
                               >
@@ -512,12 +497,12 @@ export default function AdminDashboard() {
                                 style={{
                                   padding: "10px",
                                   borderBottom: "1px solid #f1f5f9",
-                                  color: "#0f172a",
+                                  color: "#111827",
                                   fontSize: "14px",
                                 }}
                               >
                                 <div>{fullName(appointment.doctorId)}</div>
-                                <div style={{ fontSize: "12px", color: "#64748b" }}>
+                                <div style={{ fontSize: "12px", color: "#6b7280" }}>
                                   {appointment.doctorId?.specialization ||
                                     appointment.doctorId?.doctorDepartment ||
                                     "General"}
@@ -537,7 +522,7 @@ export default function AdminDashboard() {
                                 style={{
                                   padding: "10px",
                                   borderBottom: "1px solid #f1f5f9",
-                                  color: "#334155",
+                                  color: "#6b7280",
                                   fontSize: "13px",
                                 }}
                               >
@@ -606,8 +591,8 @@ export default function AdminDashboard() {
                   marginBottom: "10px",
                 }}
               >
-                <h3 style={{ color: "#0f172a", fontSize: "22px" }}>Billing Records</h3>
-                <span style={{ fontSize: "13px", color: "#64748b" }}>
+                <h3 style={{ color: "#111827", fontSize: "22px" }}>Billing Records</h3>
+                <span style={{ fontSize: "13px", color: "#6b7280" }}>
                   {billing.length} invoices
                 </span>
               </div>
@@ -618,7 +603,7 @@ export default function AdminDashboard() {
                 <div style={{ overflowX: "auto" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "820px" }}>
                     <thead>
-                      <tr style={{ background: "#f8fafc" }}>
+                      <tr style={{ background: "#f3f4f6" }}>
                         {["Patient", "Date", "Amount", "Tax", "Total", "Status", "Action"].map(
                           (heading) => (
                             <th
@@ -626,8 +611,8 @@ export default function AdminDashboard() {
                               style={{
                                 textAlign: "left",
                                 padding: "10px",
-                                borderBottom: "1px solid #e2e8f0",
-                                color: "#334155",
+                                borderBottom: "1px solid #d1d5db",
+                                color: "#111827",
                                 fontSize: "13px",
                               }}
                             >
@@ -642,7 +627,7 @@ export default function AdminDashboard() {
                         <tr>
                           <td
                             colSpan={7}
-                            style={{ padding: "14px", textAlign: "center", color: "#64748b" }}
+                            style={{ padding: "14px", textAlign: "center", color: "#6b7280" }}
                           >
                             No billing records found
                           </td>
@@ -656,7 +641,7 @@ export default function AdminDashboard() {
                                 style={{
                                   padding: "10px",
                                   borderBottom: "1px solid #f1f5f9",
-                                  color: "#0f172a",
+                                  color: "#111827",
                                   fontSize: "14px",
                                 }}
                               >
@@ -666,7 +651,7 @@ export default function AdminDashboard() {
                                 style={{
                                   padding: "10px",
                                   borderBottom: "1px solid #f1f5f9",
-                                  color: "#334155",
+                                  color: "#6b7280",
                                   fontSize: "13px",
                                 }}
                               >
@@ -676,7 +661,7 @@ export default function AdminDashboard() {
                                 style={{
                                   padding: "10px",
                                   borderBottom: "1px solid #f1f5f9",
-                                  color: "#334155",
+                                  color: "#6b7280",
                                   fontSize: "13px",
                                 }}
                               >
@@ -686,7 +671,7 @@ export default function AdminDashboard() {
                                 style={{
                                   padding: "10px",
                                   borderBottom: "1px solid #f1f5f9",
-                                  color: "#334155",
+                                  color: "#6b7280",
                                   fontSize: "13px",
                                 }}
                               >
@@ -696,7 +681,7 @@ export default function AdminDashboard() {
                                 style={{
                                   padding: "10px",
                                   borderBottom: "1px solid #f1f5f9",
-                                  color: "#334155",
+                                  color: "#6b7280",
                                   fontSize: "13px",
                                 }}
                               >
@@ -765,8 +750,8 @@ export default function AdminDashboard() {
                   marginBottom: "10px",
                 }}
               >
-                <h3 style={{ color: "#0f172a", fontSize: "22px" }}>All Users</h3>
-                <span style={{ fontSize: "13px", color: "#64748b" }}>
+                <h3 style={{ color: "#111827", fontSize: "22px" }}>All Users</h3>
+                <span style={{ fontSize: "13px", color: "#6b7280" }}>
                   {users.length} registered
                 </span>
               </div>
@@ -777,15 +762,15 @@ export default function AdminDashboard() {
                 <div style={{ overflowX: "auto" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse", minWidth: "860px" }}>
                     <thead>
-                      <tr style={{ background: "#f8fafc" }}>
+                      <tr style={{ background: "#f3f4f6" }}>
                         {["Name", "Email", "Phone", "Role", "Joined", "Action"].map((heading) => (
                           <th
                             key={heading}
                             style={{
                               textAlign: "left",
                               padding: "10px",
-                              borderBottom: "1px solid #e2e8f0",
-                              color: "#334155",
+                              borderBottom: "1px solid #d1d5db",
+                              color: "#111827",
                               fontSize: "13px",
                             }}
                           >
@@ -799,7 +784,7 @@ export default function AdminDashboard() {
                         <tr>
                           <td
                             colSpan={6}
-                            style={{ padding: "14px", textAlign: "center", color: "#64748b" }}
+                            style={{ padding: "14px", textAlign: "center", color: "#6b7280" }}
                           >
                             No users found
                           </td>
@@ -823,8 +808,8 @@ export default function AdminDashboard() {
                                       width: "30px",
                                       height: "30px",
                                       borderRadius: "50%",
-                                      background: "#e2e8f0",
-                                      color: "#0f172a",
+                                      background: "#e5e7eb",
+                                      color: "#111827",
                                       display: "grid",
                                       placeItems: "center",
                                       fontSize: "12px",
@@ -833,14 +818,14 @@ export default function AdminDashboard() {
                                   >
                                     {name.charAt(0).toUpperCase()}
                                   </div>
-                                  <span style={{ color: "#0f172a", fontSize: "14px" }}>{name}</span>
+                                  <span style={{ color: "#111827", fontSize: "14px" }}>{name}</span>
                                 </div>
                               </td>
                               <td
                                 style={{
                                   padding: "10px",
                                   borderBottom: "1px solid #f1f5f9",
-                                  color: "#334155",
+                                  color: "#6b7280",
                                   fontSize: "13px",
                                 }}
                               >
@@ -850,7 +835,7 @@ export default function AdminDashboard() {
                                 style={{
                                   padding: "10px",
                                   borderBottom: "1px solid #f1f5f9",
-                                  color: "#334155",
+                                  color: "#6b7280",
                                   fontSize: "13px",
                                 }}
                               >
@@ -878,7 +863,7 @@ export default function AdminDashboard() {
                                 style={{
                                   padding: "10px",
                                   borderBottom: "1px solid #f1f5f9",
-                                  color: "#334155",
+                                  color: "#6b7280",
                                   fontSize: "13px",
                                 }}
                               >

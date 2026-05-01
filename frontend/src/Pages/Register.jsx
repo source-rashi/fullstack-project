@@ -145,8 +145,8 @@ const Register = () => {
         <h2>Sign Up</h2>
         <p>Please Sign Up To Continue</p>
         <p>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Placeat culpa
-          voluptas expedita itaque ex, totam ad quod error?
+          Create your account to book appointments, manage visits, and stay
+          updated on your care.
         </p>
         <form onSubmit={handleRegistration}>
           <div>
